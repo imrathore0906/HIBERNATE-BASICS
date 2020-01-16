@@ -1,0 +1,155 @@
+package inheritance;
+
+import javax.persistence.Column;
+import javax.persistence.DiscriminatorColumn;
+import javax.persistence.DiscriminatorType;
+import javax.persistence.Entity;
+import javax.persistence.Id;
+import javax.persistence.Inheritance;
+import javax.persistence.InheritanceType;
+import javax.persistence.Table;
+
+@Entity
+@Table
+@Inheritance(strategy=InheritanceType.SINGLE_TABLE)
+@DiscriminatorColumn(name="booktype",discriminatorType=DiscriminatorType.STRING)
+public class Book {
+  @Id
+	private int bookid;
+  @Column(length=25)
+    private String title;
+  @Column(length=20)
+    private String author;
+  @Column
+   private double price;
+public int getBookid() {
+	return bookid;
+}
+public void setBookid(int bookid) {
+	this.bookid = bookid;
+}
+public String getTitle() {
+	return title;
+}
+public void setTitle(String title) {
+	this.title = title;
+}
+public String getAuthor() {
+	return author;
+}
+public void setAuthor(String author) {
+	this.author = author;
+}
+public double getPrice() {
+	return price;
+}
+public void setPrice(double price) {
+	this.price = price;
+}
+  
+  
+}
+
+-----------------------------------------------------------------------------------------------------------------------------------------------------
+package inheritance;
+
+import javax.persistence.DiscriminatorValue;
+import javax.persistence.Entity;
+
+@Entity
+@DiscriminatorValue(value="JavaBook")
+public class JavaBook extends Book {
+    private int discount;
+
+	public int getDiscount() {
+		return discount;
+	}
+
+	public void setDiscount(int discount) {
+		this.discount = discount;
+	}
+	
+}
+-------------------------------------------------------------------------------------------------------------------
+package inheritance;
+
+import javax.persistence.DiscriminatorValue;
+import javax.persistence.Entity;
+
+@Entity
+@DiscriminatorValue(value="DOTNET")
+public class DotnetBook extends Book{
+   private int cds;
+
+public int getCds() {
+	return cds;
+}
+
+public void setCds(int cds) {
+	this.cds = cds;
+}
+}
+------------------------------------------------------------------------------------------------------------------
+package inheritance;
+
+import org.hibernate.Session;
+import org.hibernate.SessionFactory;
+import org.hibernate.Transaction;
+import org.hibernate.cfg.AnnotationConfiguration;
+
+public class BookApp {
+     public static void main(String[] args){
+    	 AnnotationConfiguration cfg = new AnnotationConfiguration();
+    	 cfg.configure();
+    	 SessionFactory factory = cfg.buildSessionFactory();
+    	 Session ssn = factory.openSession();
+    	 Transaction tx = ssn.beginTransaction();
+       
+      Book book = new Book();
+      book.setBookid(1001);
+      book.setTitle("Oracle");
+      book.setAuthor("abc");
+      book.setPrice(400);
+      
+      JavaBook javab = new JavaBook();
+      javab.setBookid(1002);
+      javab.setTitle("Java Programming");
+      javab.setAuthor("def");
+      javab.setPrice(500);
+      javab.setDiscount(25);
+      
+      DotnetBook dotnet = new DotnetBook();
+      dotnet.setBookid(1003);
+      dotnet.setTitle(".net");
+      dotnet.setAuthor("ghi");
+      dotnet.setPrice(600);
+      dotnet.setCds(2);		
+      
+      ssn.save(book);
+      ssn.save(javab);
+      ssn.save(dotnet);
+      
+      tx.commit();
+      ssn.close();
+	}
+}
+
+-----------------------------------------------------------------------------------------------------------
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE hibernate-configuration PUBLIC "-//Hibernate/Hibernate Configuration DTD 3.0//EN" 
+"http://hibernate.sourceforge.net/hibernate-configuration-3.0.dtd">
+
+<hibernate-configuration>
+	<session-factory>
+		<property name="hibernate.dialect">org.hibernate.dialect.OracleDialect</property>
+		<property name="hibernate.connection.driver_class">oracle.jdbc.driver.OracleDriver</property>
+		<property name="hibernate.connection.url">jdbc:oracle:thin:@localhost:1521:orcl</property>
+		<property name="hibernate.connection.username">scott</property>
+		<property name="hibernate.connection.password">tiger</property>
+		<property name="hibernate.show_sql">true</property>
+		<property name="hbm2ddl.auto">update</property>
+		<mapping class="inheritance.Book" />
+		<mapping class="inheritance.JavaBook" />
+		<mapping class="inheritance.DotnetBook" />
+	</session-factory>
+</hibernate-configuration>
